@@ -1,5 +1,6 @@
 from fastapi import FastAPI, status, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from src.controllers import auth, post
@@ -15,20 +16,6 @@ async def lifespan(app: FastAPI):
     metadata.create_all(engine)
     yield
     await database.disconnect()
-
-from fastapi import FastAPI
-
-app = FastAPI(openapi_tags=tags_metadata)
-
-
-@app.get("/users/", tags=["users"])
-async def get_users():
-    return [{"name": "Harry"}, {"name": "Ron"}]
-
-
-@app.get("/items/", tags=["items"])
-async def get_items():
-    return [{"name": "wand"}, {"name": "flying broom"}]
 
 
 tags_metadata = [
@@ -51,6 +38,19 @@ servers = [
     {"url": "https://mini-blog-fastapi.onrender.com", "description": "Produção"},
 ]
 
+app = FastAPI(openapi_tags=tags_metadata)
+
+
+@app.get("/users/", tags=["users"])
+async def get_users():
+    return [{"name": "Harry"}, {"name": "Ron"}]
+
+
+@app.get("/items/", tags=["items"])
+async def get_items():
+    return [{"name": "wand"}, {"name": "flying broom"}]
+
+
 app = FastAPI(
     title="Mini-Blog API",
     version="1.0.0",
@@ -59,6 +59,15 @@ app = FastAPI(
     openapi_tags=tags_metadata,
     lifespan=lifespan
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(auth.router, tags=['auth'])
 app.include_router(post.router, tags=['post'])
 
