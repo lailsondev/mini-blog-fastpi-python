@@ -16,10 +16,51 @@ async def lifespan(app: FastAPI):
     yield
     await database.disconnect()
 
+from fastapi import FastAPI
 
-app = FastAPI(lifespan=lifespan)
-app.include_router(auth.router)
-app.include_router(post.router)
+app = FastAPI(openapi_tags=tags_metadata)
+
+
+@app.get("/users/", tags=["users"])
+async def get_users():
+    return [{"name": "Harry"}, {"name": "Ron"}]
+
+
+@app.get("/items/", tags=["items"])
+async def get_items():
+    return [{"name": "wand"}, {"name": "flying broom"}]
+
+
+tags_metadata = [
+    {
+        "name": "auth",
+        "description": "Operações para autenticação.",
+    },
+    {
+        "name": "post",
+        "description": "Operações para manter posts.",
+        "externalDocs": {
+            "description": "Documentação externa para Posts.api",
+            "url": "https://post-api.com/",
+        },
+    },
+]
+
+servers = [
+    {"url": "http://localhost:8000", "description": "Desenvolvimento"},
+    {"url": "https://mini-blog-fastapi.onrender.com", "description": "Produção"},
+]
+
+app = FastAPI(
+    title="Mini-Blog API",
+    version="1.0.0",
+    summary="API para aprendizado pessoal",
+    servers=servers,
+    openapi_tags=tags_metadata,
+    lifespan=lifespan
+)
+app.include_router(auth.router, tags=['auth'])
+app.include_router(post.router, tags=['post'])
 
 
 @app.exception_handler(NotFoundPostError)
