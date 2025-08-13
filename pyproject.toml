@@ -13,6 +13,7 @@ dependencies = [
     "databases[aiosqlite] (>=0.9.0,<0.10.0)",
     "pyjwt",
     "pydantic-settings",
+    "alembic",
 ]
 
 [build-system]
